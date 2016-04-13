@@ -27,13 +27,37 @@ func _input(event):
 		if (y < 0): 
 			return
 		if (self.tiles[x][y].clicked(self.next_tile)):
-			draw_next_tile()
+			draw_next_tile()   
 			check_tiles(x, y)
+			recal_enabled_tiles()
 		self.get_tree().set_input_as_handled()
 	
 func draw_next_tile():
 	self.next_tile = TILE_TYPES[randi() % TILE_TYPES.size()]
-	self.next_tile_indicator.set_texture(Tile.load_texture(self.next_tile))
+	self.next_tile_indicator.set_texture(Tile.load_texture(self.next_tile, true))
+
+func recal_enabled_tiles():
+	var game_over = true
+	for i in range(6):
+		for j in range(9):
+			self.tiles[i][j].disable()
+	for i in range(6):
+		for j in range(9):
+			if (self.tiles[i][j].tile_type != null):
+				self.enable_if_exist(i, j - 1)
+				self.enable_if_exist(i, j + 1)
+				self.enable_if_exist(i + 1, j)
+				self.enable_if_exist(i - 1, j)
+			else:
+				game_over = false
+	if (game_over):
+		var dialog = self.get_node("CanvasLayer/GameOver")
+		dialog.set_text(str("Game Over, Your Score: ", self.score))
+		dialog.popup()
+
+func enable_if_exist(x, y):
+	if (x >= 0 && x < 6 && y >= 0 && y < 9):
+		self.tiles[x][y].enable()
 	
 func check_tiles(x, y):
 	# Check horizontal
